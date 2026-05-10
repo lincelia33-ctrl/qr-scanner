@@ -270,7 +270,7 @@ body {
 
 <!-- 底部狀態 -->
 <div class="status-bar">
-  <div class="status-text" id="statusText">開啟相機中...</div>
+  <div class="status-text" id="statusText">點擊畫面開始掃描</div>
 </div>
 
 <!-- 相機權限說明 -->
@@ -286,18 +286,60 @@ body {
   <button class="reload-btn" onclick="location.reload()">🔄 已允許，重新整理</button>
 </div>
 
+
+<!-- 點擊開始畫面 -->
+<div id="tapOverlay" style="
+  display:none;
+  position:fixed;inset:0;
+  background:linear-gradient(160deg,#0f1923 0%,#1a2a1a 100%);
+  z-index:50;
+  align-items:center;justify-content:center;flex-direction:column;gap:20px;
+  cursor:pointer;
+" onclick="startScanner()">
+  <div style="font-size:72px;animation:pulse 1.8s ease-in-out infinite">📷</div>
+  <div style="font-size:22px;font-weight:600;letter-spacing:0.02em">點擊開始掃描</div>
+  <div style="font-size:14px;color:rgba(255,255,255,0.5)">Tap to start scanning</div>
+  <div style="
+    margin-top:8px;
+    padding:14px 36px;
+    background:rgba(76,175,80,0.2);
+    border:1.5px solid rgba(76,175,80,0.5);
+    border-radius:14px;
+    font-size:16px;font-weight:500;color:#4CAF50;
+  ">開始 Start</div>
+</div>
+<style>
+@keyframes pulse {
+  0%,100% { transform:scale(1); }
+  50%      { transform:scale(1.08); }
+}
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script>
 // ══════════════════════════════════════════════════════════
 // ★ 請把下面這個網址換成你的 GAS Web App 網址 ★
 // ══════════════════════════════════════════════════════════
-var GAS_URL = 'https://script.google.com/a/macros/cycraft.com/s/AKfycbxVU2c8_rohQFO4bw5_l-Bu6nZ_ZJSSxaDMhSmxJ1ic2JPBwwz0F-YxLjoCRv_5p__mZg/exec';
+var GAS_URL = 'https://script.google.com/macros/s/你的SCRIPT_ID/exec';
 // ══════════════════════════════════════════════════════════
 
 var stream   = null;
 var timer    = null;
 var done     = false;
 var torchOn  = false;
+
+function showTapToStart() {
+  var overlay = document.getElementById('tapOverlay');
+  if (overlay) overlay.style.display = 'flex';
+  setStatus('點擊畫面開始掃描');
+}
+
+function startScanner() {
+  var overlay = document.getElementById('tapOverlay');
+  if (overlay) overlay.style.display = 'none';
+  setStatus('開啟相機中...');
+  init();
+}
 
 function init() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -425,7 +467,11 @@ function showErr(msg) {
   el.innerHTML = msg;
 }
 
-window.addEventListener('load', init);
+window.addEventListener('load', function() {
+  // 顯示「點擊開始」畫面，等待使用者主動觸發
+  // 這樣瀏覽器才會正常詢問相機權限
+  showTapToStart();
+});
 window.addEventListener('beforeunload', function() {
   clearInterval(timer);
   if (stream) stream.getTracks().forEach(function(t) { t.stop(); });
