@@ -320,7 +320,7 @@ body {
 // ══════════════════════════════════════════════════════════
 // ★ 請把下面這個網址換成你的 GAS Web App 網址 ★
 // ══════════════════════════════════════════════════════════
-var GAS_URL = 'https://script.google.com/macros/s/你的SCRIPT_ID/exec';
+var GAS_URL = 'https://script.google.com/a/macros/cycraft.com/s/AKfycbxVU2c8_rohQFO4bw5_l-Bu6nZ_ZJSSxaDMhSmxJ1ic2JPBwwz0F-YxLjoCRv_5p__mZg/exec';
 // ══════════════════════════════════════════════════════════
 
 var stream   = null;
@@ -335,10 +335,9 @@ function showTapToStart() {
 }
 
 function startScanner() {
-  var overlay = document.getElementById('tapOverlay');
-  if (overlay) overlay.style.display = 'none';
-  setStatus('開啟相機中...');
-  init();
+  // reload 並加上 ?start=1，讓瀏覽器認可這是使用者手勢觸發的頁面載入
+  var base = location.href.split('?')[0];
+  location.href = base + '?start=1';
 }
 
 function init() {
@@ -468,9 +467,13 @@ function showErr(msg) {
 }
 
 window.addEventListener('load', function() {
-  // 顯示「點擊開始」畫面，等待使用者主動觸發
-  // 這樣瀏覽器才會正常詢問相機權限
-  showTapToStart();
+  // 若網址帶有 ?start=1，直接啟動相機（使用者已點擊過）
+  if (location.search.indexOf('start=1') >= 0) {
+    init();
+  } else {
+    // 第一次進來，顯示點擊畫面
+    showTapToStart();
+  }
 });
 window.addEventListener('beforeunload', function() {
   clearInterval(timer);
